@@ -14,6 +14,11 @@ env:
   JAVA_HOME: /usr/lib/jvm/temurin-17-jdk-amd64
   CYTHON_LANGUAGE_LEVEL: "3"
   GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.java-home=$JAVA_HOME -Dorg.gradle.jvmargs=-Xmx2048m"
+  # 设置 p4a 签名环境变量
+  P4A_RELEASE_KEYSTORE: "./craft.soul.objection.keystore"
+  P4A_RELEASE_KEYALIAS: "craft.soul.objection"
+  P4A_RELEASE_KEYSTORE_PASSWD: "android"
+  P4A_RELEASE_KEYALIAS_PASSWD: "android"
 
 jobs:
   build-android:
@@ -76,9 +81,16 @@ jobs:
         java -version
         python --version
         buildozer --version
+        
         # 设置环境变量解决网络问题
         export BUILDODER_ALLOW_PLATFORM_EXEC=1
         export USE_COLORS=0
+        
+        # 设置 p4a 签名环境变量
+        export P4A_RELEASE_KEYSTORE="./craft.soul.objection.keystore"
+        export P4A_RELEASE_KEYALIAS="craft.soul.objection"
+        export P4A_RELEASE_KEYSTORE_PASSWD="android"
+        export P4A_RELEASE_KEYALIAS_PASSWD="android"
         
         # 清理和更新
         buildozer -v android clean 2>&1 | tee clean.log

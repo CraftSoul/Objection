@@ -1,6 +1,6 @@
 [app]
 title = 振动异议器
-package.name = craft.soul.objection
+package.name = objection
 package.domain = craft.soul
 source.dir = .
 source.include_exts = py,png,jpg,kv,atlas,ttf,ogg,mp3
@@ -29,11 +29,17 @@ android.permissions = INTERNET
 
 # Release 构建和签名配置
 android.release_artifact = .apk
-# 签名配置 - 使用自动生成的密钥
+# 签名配置
 android.keystore = ./craft.soul.objection.keystore
 android.keystore_storepass = android
 android.keystore_keypass = android
 android.keystore_alias = craft.soul.objection
+
+# 设置 p4a 签名环境变量
+p4a.release_keystore = ./craft.soul.objection.keystore
+p4a.release_storepass = android
+p4a.release_keyalias = craft.soul.objection
+p4a.release_keypass = android
 
 [buildozer]
 log_level = 2

@@ -1,6 +1,7 @@
 [app]
 title = 振动异议器
 package.name = craft.soul.objection
+package.domain = craft.soul
 source.dir = .
 source.include_exts = py,png,jpg,kv,atlas,ttf,ogg,mp3
 source.include_patterns = bgm/*

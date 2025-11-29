@@ -26,6 +26,14 @@ p4a.bootstrap = sdl2
 p4a.gradle_options = -Dorg.gradle.java.home=/usr/lib/jvm/java-17-openjdk-amd64
 android.permissions = INTERNET
 
+# Release 构建和签名配置
+android.release_artifact = .apk
+# 签名配置 - 使用自动生成的密钥
+android.keystore = ./craft.soul.objection.keystore
+android.keystore_storepass = android
+android.keystore_keypass = android
+android.keystore_alias = craft.soul.objection
+
 [buildozer]
 log_level = 2
 warn_on_root = 1

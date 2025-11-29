@@ -79,9 +79,15 @@ jobs:
         # 设置环境变量解决网络问题
         export BUILDODER_ALLOW_PLATFORM_EXEC=1
         export USE_COLORS=0
+        
+        # 清理和更新
         buildozer -v android clean 2>&1 | tee clean.log
         buildozer -v android update 2>&1 | tee update.log
+        
+        # 构建 release 版本
+        echo "=== 构建 Release 版本 ==="
         buildozer -v android release 2>&1 | tee buildozer.log
+        
         # 查找所有 APK 文件并复制到当前目录
         find . -name "*.apk" -exec cp {} ./ \; 2>/dev/null || true
 
@@ -114,12 +120,8 @@ jobs:
           extension="${filename##*.}"
           filename="${filename%.*}"
           
-          # 区分 debug 和 release
-          if [[ "$filename" == *"debug"* ]]; then
-            NEW_NAME="振动异议器-${VERSION}-debug.${extension}"
-          else
-            NEW_NAME="振动异议器-${VERSION}-release.${extension}"
-          fi
+          # 只构建 release 版本
+          NEW_NAME="振动异议器-${VERSION}-release.${extension}"
           
           mv "$apk" "bin/${NEW_NAME}"
           echo "重命名为: ${NEW_NAME}"

@@ -1,8 +1,7 @@
-name: Build Kivy Android APK and Release
+name: Build Kivy Android APK
 
 on:
-  push:
-    branches: ['**']
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -51,10 +50,29 @@ jobs:
         pip install buildozer cython==0.29.33 kivy==2.2.1 plyer kivymd
         pip install python-for-android
 
-    - name: Build APK with Buildozer
+    - name: Generate signing key (if not exists)
+      id: generate_key
+      run: |
+        if [ ! -f "craft.soul.objection.keystore" ]; then
+          echo "生成新的签名密钥..."
+          keytool -genkey -v \
+            -keystore craft.soul.objection.keystore \
+            -alias craft.soul.objection \
+            -keyalg RSA -keysize 2048 \
+            -validity 10000 \
+            -storepass android \
+            -keypass android \
+            -dname "CN=Unknown, OU=Unknown, O=Unknown, L=Unknown, ST=Unknown, C=Unknown"
+          echo "KEY_CREATED=true" >> $GITHUB_OUTPUT
+        else
+          echo "使用现有的签名密钥"
+          echo "KEY_CREATED=false" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Build APK with Buildozer (Release)
       run: |
         export PATH="$HOME/.local/bin:$PATH"
-        echo "=== 使用 Buildozer 构建 APK ==="
+        echo "=== 使用 Buildozer 构建 Release APK ==="
         java -version
         python --version
         buildozer --version
@@ -63,8 +81,8 @@ jobs:
         export USE_COLORS=0
         buildozer -v android clean 2>&1 | tee clean.log
         buildozer -v android update 2>&1 | tee update.log
-        buildozer -v android debug 2>&1 | tee buildozer.log
-        # 查找所有 APK 文件并复制到 bin 目录
+        buildozer -v android release 2>&1 | tee buildozer.log
+        # 查找所有 APK 文件并复制到当前目录
         find . -name "*.apk" -exec cp {} ./ \; 2>/dev/null || true
 
     - name: Check if APK was built
@@ -95,7 +113,14 @@ jobs:
           filename=$(basename "$apk")
           extension="${filename##*.}"
           filename="${filename%.*}"
-          NEW_NAME="振动异议器-${VERSION}.${extension}"
+          
+          # 区分 debug 和 release
+          if [[ "$filename" == *"debug"* ]]; then
+            NEW_NAME="振动异议器-${VERSION}-debug.${extension}"
+          else
+            NEW_NAME="振动异议器-${VERSION}-release.${extension}"
+          fi
+          
           mv "$apk" "bin/${NEW_NAME}"
           echo "重命名为: ${NEW_NAME}"
         done
@@ -115,6 +140,14 @@ jobs:
         name: kivy-app-apk
         path: bin/*.apk
         retention-days: 30
+
+    - name: Upload signing key (if newly created)
+      if: steps.generate_key.outputs.KEY_CREATED == 'true'
+      uses: actions/upload-artifact@v4
+      with:
+        name: android-keystore
+        path: craft.soul.objection.keystore
+        retention-days: 1
 
     - name: Upload build logs
       if: always()

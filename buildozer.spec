@@ -27,8 +27,12 @@ p4a.bootstrap = sdl2
 p4a.gradle_options = -Dorg.gradle.java.home=/usr/lib/jvm/java-17-openjdk-amd64
 android.permissions = INTERNET
 
-# 强制构建 APK 而不是 AAB
+# 强制构建 APK 的配置
 android.aab = False
+# 使用旧的打包方式
+android.bundle = 0
+# 指定构建 APK
+p4a.branch = master
 
 # 签名配置
 android.keystore = /home/runner/work/Objection/Objection/craft.soul.objection.keystore

@@ -14,11 +14,6 @@ env:
   JAVA_HOME: /usr/lib/jvm/temurin-17-jdk-amd64
   CYTHON_LANGUAGE_LEVEL: "3"
   GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.java-home=$JAVA_HOME -Dorg.gradle.jvmargs=-Xmx2048m"
-  # 设置 p4a 签名环境变量
-  P4A_RELEASE_KEYSTORE: "./craft.soul.objection.keystore"
-  P4A_RELEASE_KEYALIAS: "craft.soul.objection"
-  P4A_RELEASE_KEYSTORE_PASSWD: "android"
-  P4A_RELEASE_KEYALIAS_PASSWD: "android"
 
 jobs:
   build-android:
@@ -113,6 +108,9 @@ jobs:
         else
           echo "BUILD_FINAL_SUCCESS=false" >> $GITHUB_OUTPUT
           echo "未找到 APK 文件"
+          # 检查构建目录
+          echo "=== 检查构建目录 ==="
+          find .buildozer -name "*.apk" -type f 2>/dev/null | head -10
         fi
 
     - name: Process and rename APK files

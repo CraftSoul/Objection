@@ -30,7 +30,7 @@ android.permissions = INTERNET
 # 强制构建 APK 而不是 AAB
 android.aab = False
 
-# 签名配置 - 使用绝对路径
+# 签名配置
 android.keystore = /home/runner/work/Objection/Objection/craft.soul.objection.keystore
 android.keystore_storepass = android
 android.keystore_keypass = android

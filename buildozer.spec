@@ -26,17 +26,15 @@ p4a.gradle_dependencies = gradle:7.6.4
 p4a.bootstrap = sdl2
 p4a.gradle_options = -Dorg.gradle.java.home=/usr/lib/jvm/java-17-openjdk-amd64
 android.permissions = INTERNET
-# 签名配置
-android.keystore = ./craft.soul.objection.keystore
+
+# 强制构建 APK 而不是 AAB
+android.aab = False
+
+# 签名配置 - 使用绝对路径
+android.keystore = /home/runner/work/Objection/Objection/craft.soul.objection.keystore
 android.keystore_storepass = android
 android.keystore_keypass = android
 android.keystore_alias = craft.soul.objection
-
-# 设置 p4a 签名环境变量
-p4a.release_keystore = ./craft.soul.objection.keystore
-p4a.release_storepass = android
-p4a.release_keyalias = craft.soul.objection
-p4a.release_keypass = android
 
 [buildozer]
 log_level = 2

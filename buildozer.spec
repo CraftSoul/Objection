@@ -26,9 +26,6 @@ p4a.gradle_dependencies = gradle:7.6.4
 p4a.bootstrap = sdl2
 p4a.gradle_options = -Dorg.gradle.java.home=/usr/lib/jvm/java-17-openjdk-amd64
 android.permissions = INTERNET
-
-# Release 构建和签名配置
-android.release_artifact = .apk
 # 签名配置
 android.keystore = ./craft.soul.objection.keystore
 android.keystore_storepass = android

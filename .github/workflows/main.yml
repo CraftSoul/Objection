@@ -69,15 +69,6 @@ jobs:
           echo "KEY_CREATED=false" >> $GITHUB_OUTPUT
         fi
 
-    - name: Copy keystore to build directory
-      run: |
-        echo "=== 复制签名密钥到构建目录 ==="
-        # 确保构建目录存在
-        mkdir -p .buildozer/android/platform/build-arm64-v8a_armeabi-v7a/dists/objection
-        # 复制密钥文件
-        cp craft.soul.objection.keystore .buildozer/android/platform/build-arm64-v8a_armeabi-v7a/dists/objection/
-        echo "密钥已复制到构建目录"
-
     - name: Build APK with Buildozer (Release)
       run: |
         export PATH="$HOME/.local/bin:$PATH"
@@ -100,53 +91,60 @@ jobs:
         buildozer -v android clean 2>&1 | tee clean.log
         buildozer -v android update 2>&1 | tee update.log
         
-        # 构建 release 版本
-        echo "=== 构建 Release 版本 ==="
+        # 构建 release 版本 - 强制构建 APK
+        echo "=== 构建 Release APK 版本 ==="
         buildozer -v android release 2>&1 | tee buildozer.log
         
-        # 查找所有 APK 文件并复制到当前目录
+        # 查找所有 APK 和 AAB 文件并复制到当前目录
         find . -name "*.apk" -exec cp {} ./ \; 2>/dev/null || true
+        find . -name "*.aab" -exec cp {} ./ \; 2>/dev/null || true
 
-    - name: Check if APK was built
+    - name: Check if APK/AAB was built
       id: check-build
       run: |
-        if ls *.apk 1> /dev/null 2>&1; then
+        if ls *.apk 1> /dev/null 2>&1 || ls *.aab 1> /dev/null 2>&1; then
           echo "BUILD_FINAL_SUCCESS=true" >> $GITHUB_OUTPUT
-          echo "找到 APK 文件:"
-          ls -la *.apk
+          echo "找到构建文件:"
+          ls -la *.apk *.aab 2>/dev/null || true
         else
           echo "BUILD_FINAL_SUCCESS=false" >> $GITHUB_OUTPUT
-          echo "未找到 APK 文件"
+          echo "未找到构建文件"
           # 检查构建目录
           echo "=== 检查构建目录 ==="
-          find .buildozer -name "*.apk" -type f 2>/dev/null | head -10
+          find .buildozer -name "*.apk" -o -name "*.aab" -type f 2>/dev/null | head -10
         fi
 
-    - name: Process and rename APK files
+    - name: Process and rename APK/AAB files
       if: steps.check-build.outputs.BUILD_FINAL_SUCCESS == 'true'
       run: |
-        echo "=== 处理 APK 文件 ==="
+        echo "=== 处理构建文件 ==="
         mkdir -p bin
-        # 移动所有 APK 文件到 bin 目录
-        for apk in *.apk; do
-          if [ -n "${{ github.ref_type }}" ] && [ "${{ github.ref_type }}" = "tag" ]; then
-            VERSION="${{ github.ref_name }}"
-          else
-            VERSION="$(git rev-parse --short HEAD)"
+        # 移动所有 APK 和 AAB 文件到 bin 目录
+        for file in *.apk *.aab; do
+          if [ -f "$file" ]; then
+            if [ -n "${{ github.ref_type }}" ] && [ "${{ github.ref_type }}" = "tag" ]; then
+              VERSION="${{ github.ref_name }}"
+            else
+              VERSION="$(git rev-parse --short HEAD)"
+            fi
+            # 获取文件扩展名和基本名称
+            filename=$(basename "$file")
+            extension="${filename##*.}"
+            filename="${filename%.*}"
+            
+            # 根据文件类型命名
+            if [[ "$extension" == "apk" ]]; then
+              NEW_NAME="振动异议器-${VERSION}-release.${extension}"
+            else
+              NEW_NAME="振动异议器-${VERSION}-release.${extension}"
+            fi
+            
+            mv "$file" "bin/${NEW_NAME}"
+            echo "重命名为: ${NEW_NAME}"
           fi
-          # 获取文件扩展名和基本名称
-          filename=$(basename "$apk")
-          extension="${filename##*.}"
-          filename="${filename%.*}"
-          
-          # 只构建 release 版本
-          NEW_NAME="振动异议器-${VERSION}-release.${extension}"
-          
-          mv "$apk" "bin/${NEW_NAME}"
-          echo "重命名为: ${NEW_NAME}"
         done
         
-        echo "=== 最终 APK 文件 ==="
+        echo "=== 最终构建文件 ==="
         ls -la bin/
 
     - name: Get current date
@@ -154,12 +152,12 @@ jobs:
       id: date
       run: echo "date=$(date -u +'%Y-%m-%d')" >> $GITHUB_OUTPUT
 
-    - name: Upload APK artifact
+    - name: Upload APK/AAB artifact
       if: steps.check-build.outputs.BUILD_FINAL_SUCCESS == 'true'
       uses: actions/upload-artifact@v4
       with:
-        name: kivy-app-apk
-        path: bin/*.apk
+        name: kivy-app-build
+        path: bin/*
         retention-days: 30
 
     - name: Upload signing key (if newly created)

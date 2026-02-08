@@ -76,26 +76,16 @@ jobs:
         java -version
         python --version
         buildozer --version
-        
-        # 设置环境变量解决网络问题
         export BUILDODER_ALLOW_PLATFORM_EXEC=1
         export USE_COLORS=0
-        
         # 设置 p4a 签名环境变量
         export P4A_RELEASE_KEYSTORE="$PWD/craft.soul.objection.keystore"
         export P4A_RELEASE_KEYALIAS="craft.soul.objection"
         export P4A_RELEASE_KEYSTORE_PASSWD="android"
         export P4A_RELEASE_KEYALIAS_PASSWD="android"
-        
-        # 清理和更新
         buildozer -v android clean 2>&1 | tee clean.log
         buildozer -v android update 2>&1 | tee update.log
-        
-        # 构建 release 版本 - 强制构建 APK
-        echo "=== 构建 Release APK 版本 ==="
         buildozer -v android release 2>&1 | tee buildozer.log
-        
-        # 查找所有 APK 和 AAB 文件并复制到当前目录
         find . -name "*.apk" -exec cp {} ./ \; 2>/dev/null || true
         find . -name "*.aab" -exec cp {} ./ \; 2>/dev/null || true
 
@@ -109,7 +99,6 @@ jobs:
         else
           echo "BUILD_FINAL_SUCCESS=false" >> $GITHUB_OUTPUT
           echo "未找到构建文件"
-          # 检查构建目录
           echo "=== 检查构建目录 ==="
           find .buildozer -name "*.apk" -o -name "*.aab" -type f 2>/dev/null | head -10
         fi

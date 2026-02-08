@@ -114,44 +114,6 @@ jobs:
           find .buildozer -name "*.apk" -o -name "*.aab" -type f 2>/dev/null | head -10
         fi
 
-    - name: Process and rename APK/AAB files
-      if: steps.check-build.outputs.BUILD_FINAL_SUCCESS == 'true'
-      run: |
-        echo "=== 处理构建文件 ==="
-        mkdir -p bin
-        # 移动所有 APK 和 AAB 文件到 bin 目录
-        for file in *.apk *.aab; do
-          if [ -f "$file" ]; then
-            if [ -n "${{ github.ref_type }}" ] && [ "${{ github.ref_type }}" = "tag" ]; then
-              VERSION="${{ github.ref_name }}"
-            else
-              VERSION="$(git rev-parse --short HEAD)"
-            fi
-            # 获取文件扩展名和基本名称
-            filename=$(basename "$file")
-            extension="${filename##*.}"
-            filename="${filename%.*}"
-            
-            # 根据文件类型命名
-            if [[ "$extension" == "apk" ]]; then
-              NEW_NAME="振动异议器-${VERSION}-release.${extension}"
-            else
-              NEW_NAME="振动异议器-${VERSION}-release.${extension}"
-            fi
-            
-            mv "$file" "bin/${NEW_NAME}"
-            echo "重命名为: ${NEW_NAME}"
-          fi
-        done
-        
-        echo "=== 最终构建文件 ==="
-        ls -la bin/
-
-    - name: Get current date
-      if: steps.check-build.outputs.BUILD_FINAL_SUCCESS == 'true'
-      id: date
-      run: echo "date=$(date -u +'%Y-%m-%d')" >> $GITHUB_OUTPUT
-
     - name: Upload APK/AAB artifact
       if: steps.check-build.outputs.BUILD_FINAL_SUCCESS == 'true'
       uses: actions/upload-artifact@v4
